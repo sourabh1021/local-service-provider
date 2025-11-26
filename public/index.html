@@ -10,9 +10,12 @@
     body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); height: 100vh; display: flex; flex-direction: column; }
     
     /* --- LANDING PAGE STYLES --- */
-    #landing-page {
+    #landing-page, #contact-page, #profile-page {
         display: flex; flex-direction: column; height: 100%; overflow-y: auto; background: white;
     }
+    /* Hide pages by default */
+    #contact-page, #profile-page { display: none; }
+
     .landing-header {
         padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center;
         background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -54,6 +57,69 @@
     }
     .review-author { display: block; margin-top: 10px; font-weight: bold; color: var(--accent); }
 
+    /* --- PROFILE PAGE STYLES --- */
+    .profile-container {
+        max-width: 1000px; margin: 2rem auto; padding: 0 20px; width: 100%; box-sizing: border-box;
+        display: flex; gap: 30px; align-items: flex-start;
+    }
+    .profile-sidebar {
+        width: 280px; background: white; border: 1px solid #eee; border-radius: 10px; padding: 20px; text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .profile-pic {
+        width: 100px; height: 100px; background: #eef2f6; border-radius: 50%; margin: 0 auto 15px;
+        display: flex; align-items: center; justify-content: center; font-size: 40px; color: #aaa;
+    }
+    .profile-nav { margin-top: 20px; text-align: left; }
+    .p-nav-item {
+        padding: 12px 15px; cursor: pointer; border-radius: 6px; color: #555; font-weight: 500; margin-bottom: 5px;
+    }
+    .p-nav-item:hover { background: #f8f9fa; color: var(--primary); }
+    .p-nav-item.active { background: #e6f0ff; color: var(--primary); }
+
+    .profile-content { flex: 1; background: white; border: 1px solid #eee; border-radius: 10px; padding: 25px; min-height: 400px; }
+    .p-section { display: none; }
+    .p-section.active { display: block; }
+    
+    .history-item {
+        border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .status-badge {
+        padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;
+    }
+    .status-done { background: #e6f4ea; color: var(--success); }
+    .status-open { background: #fff4e6; color: var(--accent); }
+    .status-progress { background: #e6f0ff; color: var(--primary); }
+
+    /* --- CONTACT PAGE STYLES --- */
+    .contact-hero {
+        background: #f8f9fa; padding: 3rem 2rem; text-align: center; border-bottom: 1px solid #eee;
+    }
+    .contact-grid {
+        display: flex; flex-wrap: wrap; max-width: 1000px; margin: 2rem auto; gap: 2rem; padding: 0 1rem; width: 100%; box-sizing: border-box;
+    }
+    .contact-col { flex: 1; min-width: 300px; }
+    
+    .faq-item { margin-bottom: 15px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+    .faq-question { padding: 15px; background: #f9f9f9; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; }
+    .faq-answer { padding: 15px; display: none; border-top: 1px solid #eee; color: #555; line-height: 1.5; }
+    .faq-item.active .faq-answer { display: block; }
+    .faq-item.active .faq-question { background: #eef2f6; color: var(--primary); }
+
+    .contact-details-box {
+        background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #eee;
+    }
+    .contact-row { display: flex; align-items: center; margin-bottom: 15px; gap: 15px; }
+    .icon-circle {
+        width: 40px; height: 40px; background: #eef2f6; border-radius: 50%; display: flex;
+        align-items: center; justify-content: center; color: var(--primary); font-size: 1.2rem;
+    }
+
+    .support-form {
+        background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee;
+    }
+    
     /* --- MODAL STYLES --- */
     .modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -183,13 +249,17 @@
 
     /* --- APP LAYOUT --- */
     #main-app { display: none; height: 100%; flex-direction: column; } /* Hidden by default */
-    header { background: var(--white); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    header { background: var(--white); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     header h3 { margin: 0; color: var(--primary); }
     
     .nav-btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: 0.2s; }
     .btn-login { border: 1px solid var(--primary); color: var(--primary); background: transparent; margin-right: 10px; }
     .btn-signup { border: none; background: var(--primary); color: white; }
     .btn-logout { border: 1px solid #ccc; background: #eee; color: #333; }
+    .btn-contact { border: none; background: transparent; color: #666; margin-right: 15px; }
+    .btn-contact:hover { color: var(--primary); }
+    .btn-profile { border: none; background: #e6f0ff; color: var(--primary); margin-right: 10px; font-weight: bold; }
+    .btn-profile:hover { background: #d0e1ff; }
     .btn-home { border: none; background: transparent; color: #333; margin-right: 15px; }
     .btn-home:hover { color: var(--primary); background: #f0f0f0; }
 
@@ -227,9 +297,12 @@
 <!-- NEW: LANDING PAGE -->
 <div id="landing-page">
     <header class="landing-header">
-        <h2 style="margin:0; color:var(--primary);">Local Services</h2>
-        <div id="landing-nav">
-             <!-- JS will inject Login/Signup here -->
+        <div style="display: flex; align-items: center;">
+            <img src="logo.jpeg" alt="Logo" style="height: 50px; margin-right: 15px;">
+            <h2 style="margin:0; color:var(--primary);">Local Services</h2>
+        </div>
+        <div id="landing-nav" style="display:flex; align-items:center;">
+             <!-- JS will inject Login/Signup/Contact here -->
         </div>
     </header>
 
@@ -289,6 +362,138 @@
         </div>
         <p style="margin-top:40px; opacity:0.6;">&copy; 2024 Local Services Finder. All rights reserved.</p>
     </footer>
+</div>
+
+<!-- NEW: PROFILE PAGE -->
+<div id="profile-page">
+    <header class="landing-header">
+        <div style="display: flex; align-items: center; cursor: pointer;" onclick="goHome()">
+            <img src="logo.jpeg" alt="Logo" style="height: 50px; margin-right: 15px;">
+            <h2 style="margin:0; color:var(--primary);">Local Services</h2>
+        </div>
+        <button class="nav-btn btn-home" onclick="goHome()">Back to Home</button>
+    </header>
+
+    <div class="profile-container">
+        <!-- Sidebar -->
+        <div class="profile-sidebar">
+            <div class="profile-pic">👤</div>
+            <h3 id="profile-name" style="margin-bottom: 5px;">User Name</h3>
+            <p id="profile-email" style="color: #666; margin-top: 0; font-size: 0.9rem;">user@example.com</p>
+            
+            <div class="profile-nav">
+                <div class="p-nav-item active" onclick="switchProfileTab('bookings')">📅 My Bookings</div>
+                <div class="p-nav-item" onclick="switchProfileTab('reviews')">⭐ My Ratings</div>
+                <div class="p-nav-item" onclick="switchProfileTab('tickets')">🎫 Support Tickets</div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="profile-content">
+            <div id="tab-bookings" class="p-section active">
+                <h2 style="margin-top:0;">Previous Bookings</h2>
+                <div id="bookings-list">
+                    <p style="color:#777;">No bookings found.</p>
+                </div>
+            </div>
+
+            <div id="tab-reviews" class="p-section">
+                <h2 style="margin-top:0;">My Ratings & Reviews</h2>
+                <div id="reviews-list">
+                    <p style="color:#777;">No reviews submitted yet.</p>
+                </div>
+            </div>
+
+            <div id="tab-tickets" class="p-section">
+                <h2 style="margin-top:0;">Support Tickets</h2>
+                <div id="tickets-list">
+                    <p style="color:#777;">No tickets raised.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NEW: CONTACT US PAGE -->
+<div id="contact-page">
+    <header class="landing-header">
+        <div style="display: flex; align-items: center; cursor: pointer;" onclick="goHome()">
+            <img src="logo.jpeg" alt="Logo" style="height: 50px; margin-right: 15px;">
+            <h2 style="margin:0; color:var(--primary);">Local Services</h2>
+        </div>
+        <button class="nav-btn btn-home" onclick="goHome()">Back to Home</button>
+    </header>
+
+    <div class="contact-hero">
+        <h1>Contact Us & Support</h1>
+        <p>Have questions? We're here to help!</p>
+    </div>
+
+    <div class="contact-grid">
+        <!-- Left Col: Contact Info & FAQ -->
+        <div class="contact-col">
+            <div class="contact-details-box">
+                <h3 style="margin-top:0;">Get in Touch</h3>
+                <div class="contact-row">
+                    <div class="icon-circle">📞</div>
+                    <div>
+                        <strong>Customer Support</strong><br>
+                        +91 1800-123-4567
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <div class="icon-circle">📧</div>
+                    <div>
+                        <strong>Email Us</strong><br>
+                        support@localservices.com
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <div class="icon-circle">📍</div>
+                    <div>
+                        <strong>Headquarters</strong><br>
+                        HSR Layout, Bangalore
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-left:5px;">Frequently Asked Questions</h3>
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">How do I book a service? <span>+</span></div>
+                <div class="faq-answer">Simply go to the home page, click "Find a Professional", select your service type, and choose a provider near you.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">Is payment secure? <span>+</span></div>
+                <div class="faq-answer">Yes! You can pay directly to the provider via Cash or UPI after the service is completed to your satisfaction.</div>
+            </div>
+            <div class="faq-item" onclick="toggleFaq(this)">
+                <div class="faq-question">Can I cancel a booking? <span>+</span></div>
+                <div class="faq-answer">Yes, you can cancel a booking from the tracking screen before the provider arrives at your location.</div>
+            </div>
+        </div>
+
+        <!-- Right Col: Support Form -->
+        <div class="contact-col">
+            <div class="support-form">
+                <h3 style="margin-top:0;">Report a Problem</h3>
+                <p style="color:#666; font-size:0.9rem; margin-bottom:20px;">Describe your issue below and our support team will get back to you within 24 hours.</p>
+                
+                <div class="input-group">
+                    <label>Your Name</label>
+                    <input type="text" id="contact-name" placeholder="John Doe">
+                </div>
+                <div class="input-group">
+                    <label>Mobile Number</label>
+                    <input type="tel" id="contact-phone" placeholder="+91 98765 43210">
+                </div>
+                <div class="input-group">
+                    <label>Describe the Issue</label>
+                    <textarea id="contact-msg" style="width:100%; height:120px; padding:10px; border:1px solid #ddd; border-radius:6px; resize:none; font-family:inherit; box-sizing:border-box;" placeholder="I have an issue with..."></textarea>
+                </div>
+                <button class="btn-primary" onclick="submitContact()">Submit Ticket</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- AUTH MODAL -->
@@ -420,7 +625,7 @@
     </div>
 </div>
 
-<!-- NEW: CUSTOM ALERT MODAL -->
+<!-- CUSTOM ALERT MODAL -->
 <div id="custom-alert" class="modal-overlay">
     <div id="custom-alert-box" class="modal-box">
         <div id="alert-icon" class="alert-icon">⚠️</div>
@@ -433,7 +638,10 @@
 <!-- MAIN APP (Initially Hidden) -->
 <div id="main-app">
     <header>
-        <h3 onclick="goHome()" style="cursor:pointer">Local Services Finder</h3>
+        <div style="display: flex; align-items: center; cursor: pointer;" onclick="goHome()">
+            <img src="logo.jpeg" alt="Logo" style="height: 50px; margin-right: 15px;">
+            <h3 style="margin:0; color:var(--primary);">Local Services Finder</h3>
+        </div>
         <div style="display:flex; align-items:center;">
             <button onclick="goHome()" class="nav-btn btn-home">Home</button>
             <div id="nav-container" style="display:flex; align-items:center;"></div>
@@ -474,7 +682,9 @@
     let trackingMap, trackUserMarker, trackProviderMarker, trackPolyline, trackInterval;
     let currentProviderPhone = "";
     let currentRating = 0;
-    let onAlertClose = null; // Callback for alert close
+    let currentBookingProvider = null; 
+    let currentBookingId = null; // New global to track active booking
+    let onAlertClose = null; 
 
     // --- CUSTOM ALERT LOGIC ---
     function showCustomAlert(message, title = "Notice", icon = "⚠️", callback = null) {
@@ -500,18 +710,15 @@
         return '';
     }
 
-    // --- NAVIGATION ---
+    // --- NAVIGATION & PAGE SWITCHING ---
     function enterApp(service = '') {
         document.getElementById('landing-page').style.display = 'none';
+        document.getElementById('contact-page').style.display = 'none'; 
+        document.getElementById('profile-page').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
         
-        // FIX: Initialize map immediately so 'markersLayer' exists for loadProviders
         initMap();
-        
-        // Resize map after layout update to ensure tiles load correctly
-        setTimeout(() => {
-            if(map) map.invalidateSize();
-        }, 100);
+        setTimeout(() => { if(map) map.invalidateSize(); }, 100);
 
         if (service) {
             document.getElementById('serviceSelect').value = service;
@@ -528,12 +735,154 @@
         document.getElementById('feedback-overlay').style.display = 'none';
         document.getElementById('call-overlay').style.display = 'none';
         document.getElementById('main-app').style.display = 'none';
+        document.getElementById('contact-page').style.display = 'none'; 
+        document.getElementById('profile-page').style.display = 'none';
         document.getElementById('landing-page').style.display = 'flex';
         
         document.getElementById('serviceSelect').value = "";
         document.getElementById('distanceSelect').value = "";
         
         updateLandingNav();
+    }
+
+    // --- CONTACT PAGE LOGIC ---
+    function showContactUs() {
+        document.getElementById('landing-page').style.display = 'none';
+        document.getElementById('main-app').style.display = 'none';
+        document.getElementById('profile-page').style.display = 'none';
+        document.getElementById('contact-page').style.display = 'flex';
+        document.getElementById('contact-page').scrollTop = 0;
+    }
+
+    function toggleFaq(el) {
+        el.classList.toggle('active');
+    }
+
+    function submitContact() {
+        const name = document.getElementById('contact-name').value;
+        const phone = document.getElementById('contact-phone').value;
+        const msg = document.getElementById('contact-msg').value;
+
+        if (!name || !phone || !msg) {
+            showCustomAlert("Please fill in all fields.", "Incomplete", "⚠️");
+            return;
+        }
+
+        // Save Ticket to LocalStorage
+        const user = JSON.parse(localStorage.getItem('user'));
+        if(user) {
+            const newTicket = {
+                id: Date.now(),
+                userId: user.id || user.email,
+                issue: msg,
+                date: new Date().toLocaleDateString(),
+                status: 'Open'
+            };
+            const tickets = JSON.parse(localStorage.getItem('localServices_tickets')) || [];
+            tickets.push(newTicket);
+            localStorage.setItem('localServices_tickets', JSON.stringify(tickets));
+        }
+
+        showCustomAlert("Your ticket has been submitted successfully! We will contact you shortly.", "Ticket Created", "✅", () => {
+            document.getElementById('contact-name').value = '';
+            document.getElementById('contact-phone').value = '';
+            document.getElementById('contact-msg').value = '';
+            goHome();
+        });
+    }
+
+    // --- PROFILE PAGE LOGIC ---
+    function showProfile() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if(!user) {
+            showCustomAlert("Please login to view your profile.", "Access Denied", "🔒", () => openAuth('login'));
+            return;
+        }
+
+        document.getElementById('landing-page').style.display = 'none';
+        document.getElementById('main-app').style.display = 'none';
+        document.getElementById('contact-page').style.display = 'none';
+        document.getElementById('profile-page').style.display = 'flex';
+        
+        document.getElementById('profile-name').textContent = user.name;
+        document.getElementById('profile-email').textContent = user.email;
+
+        loadProfileData();
+        switchProfileTab('bookings'); // Default tab
+    }
+
+    function switchProfileTab(tabName) {
+        document.querySelectorAll('.p-nav-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.p-nav-item').forEach(el => {
+            if(el.textContent.toLowerCase().includes(tabName)) el.classList.add('active');
+        });
+
+        document.querySelectorAll('.p-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    function loadProfileData() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const uid = user.id || user.email;
+
+        // 1. Load Bookings
+        const allBookings = JSON.parse(localStorage.getItem('localServices_bookings')) || [];
+        const myBookings = allBookings.filter(b => b.userId === uid).reverse();
+        
+        const bookingContainer = document.getElementById('bookings-list');
+        if (myBookings.length === 0) {
+            bookingContainer.innerHTML = '<p style="color:#777;">No previous bookings found.</p>';
+        } else {
+            bookingContainer.innerHTML = myBookings.map(b => {
+                const statusClass = b.status === 'Completed' ? 'status-done' : 'status-progress';
+                return `
+                <div class="history-item">
+                    <div>
+                        <strong>${b.providerName}</strong> <span style="color:#666;">(${b.service})</span><br>
+                        <small>${b.date}</small>
+                    </div>
+                    <div class="status-badge ${statusClass}">${b.status}</div>
+                </div>
+            `}).join('');
+        }
+
+        // 2. Load Reviews
+        const allReviews = JSON.parse(localStorage.getItem('localServices_reviews')) || [];
+        const myReviews = allReviews.filter(r => r.userId === uid).reverse();
+        
+        const reviewContainer = document.getElementById('reviews-list');
+        if (myReviews.length === 0) {
+            reviewContainer.innerHTML = '<p style="color:#777;">No reviews submitted yet.</p>';
+        } else {
+            reviewContainer.innerHTML = myReviews.map(r => `
+                <div class="history-item">
+                    <div>
+                        <strong>${r.providerName}</strong><br>
+                        <span style="color:#f1c40f;">${"★".repeat(r.rating)}</span> <small style="color:#666;">"${r.comment}"</small>
+                    </div>
+                    <small>${r.date}</small>
+                </div>
+            `).join('');
+        }
+
+        // 3. Load Tickets
+        const allTickets = JSON.parse(localStorage.getItem('localServices_tickets')) || [];
+        const myTickets = allTickets.filter(t => t.userId === uid).reverse();
+        
+        const ticketContainer = document.getElementById('tickets-list');
+        if (myTickets.length === 0) {
+            ticketContainer.innerHTML = '<p style="color:#777;">No active support tickets.</p>';
+        } else {
+            ticketContainer.innerHTML = myTickets.map(t => `
+                <div class="history-item">
+                    <div>
+                        <strong>Ticket #${t.id.toString().slice(-4)}</strong><br>
+                        <small>${t.issue.substring(0, 40)}...</small>
+                    </div>
+                    <div class="status-badge status-open">${t.status}</div>
+                </div>
+            `).join('');
+        }
     }
 
     // --- AUTH UI ---
@@ -571,6 +920,7 @@
         const nav = document.getElementById('nav-container');
         if (user) {
             nav.innerHTML = `<span style="margin-right:15px; font-weight:bold;">Hi, ${user.name}</span>
+                             <button onclick="showProfile()" class="nav-btn btn-profile">Profile</button>
                              <button onclick="logout()" class="nav-btn btn-logout">Logout</button>`;
         } else {
             nav.innerHTML = `<button onclick="openAuth('login')" class="nav-btn btn-login">Login</button>
@@ -581,17 +931,22 @@
     function updateLandingNav() {
         const user = JSON.parse(localStorage.getItem('user'));
         const nav = document.getElementById('landing-nav');
+        
+        let html = `<button onclick="showContactUs()" class="nav-btn btn-contact">Contact Us</button>`;
+        
         if (user) {
-            nav.innerHTML = `
+            html += `
                 <span style="margin-right:15px; font-weight:bold; color:var(--primary);">Hi, ${user.name}</span>
+                <button onclick="showProfile()" class="nav-btn btn-profile">Profile</button>
                 <button onclick="logout()" class="nav-btn btn-logout">Logout</button>
             `;
         } else {
-            nav.innerHTML = `
+            html += `
                 <button onclick="openAuth('login')" class="nav-btn btn-login">Login</button>
                 <button onclick="openAuth('signup')" class="nav-btn btn-signup">Sign Up</button>
             `;
         }
+        nav.innerHTML = html;
     }
 
     // --- TRACKING & MAPS ---
@@ -623,6 +978,23 @@
         
         closeDetails();
         const p = allProviders.find(prov => prov._id === id);
+        
+        currentBookingProvider = p;
+        currentBookingId = Date.now();
+        
+        const newBooking = {
+            id: currentBookingId,
+            userId: user.id || user.email,
+            providerName: p.name,
+            service: p.service,
+            date: new Date().toLocaleDateString(),
+            price: p.priceFrom,
+            status: 'In Progress' 
+        };
+        const bookings = JSON.parse(localStorage.getItem('localServices_bookings')) || [];
+        bookings.push(newBooking);
+        localStorage.setItem('localServices_bookings', JSON.stringify(bookings));
+
         startLiveTracking(p);
     }
 
@@ -708,6 +1080,30 @@
             showCustomAlert("Please select a star rating.", "Rating Missing", "⭐");
             return;
         }
+
+        // Update Booking Status
+        const bookings = JSON.parse(localStorage.getItem('localServices_bookings')) || [];
+        const bookingIndex = bookings.findIndex(b => b.id === currentBookingId);
+        if(bookingIndex !== -1) {
+            bookings[bookingIndex].status = 'Completed';
+            localStorage.setItem('localServices_bookings', JSON.stringify(bookings));
+        }
+
+        // SAVE REVIEW TO LOCALSTORAGE
+        const user = JSON.parse(localStorage.getItem('user'));
+        if(user && currentBookingProvider) {
+            const newReview = {
+                userId: user.id || user.email,
+                providerName: currentBookingProvider.name,
+                rating: currentRating,
+                comment: document.getElementById('feedback-text').value || "No comment",
+                date: new Date().toLocaleDateString()
+            };
+            const reviews = JSON.parse(localStorage.getItem('localServices_reviews')) || [];
+            reviews.push(newReview);
+            localStorage.setItem('localServices_reviews', JSON.stringify(reviews));
+        }
+
         showCustomAlert(`Thank you! Your review has been submitted.`, "Success", "🎉", () => goHome());
     }
 
@@ -786,8 +1182,6 @@
             if (currentFrame % Math.floor(framesPerSegment) === 0) {
                 segmentIndex++;
             }
-            
-            // Removed countdown logic. Time remains static until arrival.
             
             if (segmentIndex >= totalSegments || currentFrame >= totalFrames) {
                 clearInterval(trackInterval);
@@ -889,7 +1283,6 @@
             const list = document.getElementById('providersList');
             list.innerHTML = '';
             
-            // FIX: Ensure layer exists before clearing (Safety check)
             if (!markersLayer) initMap();
             if (markersLayer) markersLayer.clearLayers();
 
@@ -912,7 +1305,6 @@
                 });
                 list.appendChild(card);
 
-                // FIX: Safety check for adding layer
                 if (markersLayer) {
                     L.marker([p.lat, p.lng]).addTo(markersLayer)
                      .bindPopup(`<b>${p.name}</b><br>${p.service}<br>₹${p.priceFrom}`)
