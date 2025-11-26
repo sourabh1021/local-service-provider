@@ -167,6 +167,20 @@
         50% { transform: translateY(-10px); }
     }
 
+    /* --- FEEDBACK STARS --- */
+    .star-rating span { transition: 0.2s; }
+    .star-rating span.gold { color: var(--accent); }
+
+    /* --- CUSTOM ALERT STYLES --- */
+    #custom-alert-box {
+        width: 300px;
+        text-align: center;
+    }
+    .alert-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+
     /* --- APP LAYOUT --- */
     #main-app { display: none; height: 100%; flex-direction: column; } /* Hidden by default */
     header { background: var(--white); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -389,6 +403,33 @@
     </div>
 </div>
 
+<!-- FEEDBACK OVERLAY -->
+<div id="feedback-overlay" class="modal-overlay">
+    <div class="modal-box" style="text-align: center;">
+        <h2 style="color: var(--primary); margin-top: 0;">Service Complete</h2>
+        <div style="width: 60px; height: 60px; background: #e6f4ea; border-radius: 50%; color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 15px;">✓</div>
+        <p>How was your experience with <br><strong id="feedback-provider-name">Provider</strong>?</p>
+        
+        <div id="star-container" class="star-rating" style="font-size: 2.5rem; color: #ddd; margin: 15px 0; cursor: pointer;">
+            <span onclick="rate(1)">★</span><span onclick="rate(2)">★</span><span onclick="rate(3)">★</span><span onclick="rate(4)">★</span><span onclick="rate(5)">★</span>
+        </div>
+        
+        <textarea id="feedback-text" placeholder="Share your feedback..." style="width: 100%; height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; resize: none; font-family: inherit; margin-bottom: 15px; box-sizing: border-box;"></textarea>
+        
+        <button class="btn-primary" onclick="submitFeedback()">Submit Review</button>
+    </div>
+</div>
+
+<!-- NEW: CUSTOM ALERT MODAL -->
+<div id="custom-alert" class="modal-overlay">
+    <div id="custom-alert-box" class="modal-box">
+        <div id="alert-icon" class="alert-icon">⚠️</div>
+        <h3 id="alert-title" style="margin: 0 0 10px 0; color: var(--text-dark);">Notice</h3>
+        <p id="alert-message" style="color: #666; margin-bottom: 25px; line-height: 1.5;">Message goes here</p>
+        <button class="btn-primary" onclick="closeCustomAlert()">OK</button>
+    </div>
+</div>
+
 <!-- MAIN APP (Initially Hidden) -->
 <div id="main-app">
     <header>
@@ -432,6 +473,25 @@
     let map, markersLayer;
     let trackingMap, trackUserMarker, trackProviderMarker, trackPolyline, trackInterval;
     let currentProviderPhone = "";
+    let currentRating = 0;
+    let onAlertClose = null; // Callback for alert close
+
+    // --- CUSTOM ALERT LOGIC ---
+    function showCustomAlert(message, title = "Notice", icon = "⚠️", callback = null) {
+        document.getElementById('alert-title').textContent = title;
+        document.getElementById('alert-message').textContent = message;
+        document.getElementById('alert-icon').textContent = icon;
+        document.getElementById('custom-alert').style.display = 'flex';
+        onAlertClose = callback;
+    }
+
+    function closeCustomAlert() {
+        document.getElementById('custom-alert').style.display = 'none';
+        if (onAlertClose) {
+            onAlertClose();
+            onAlertClose = null;
+        }
+    }
 
     function getApiBaseUrl() {
         if (window.location.protocol === 'blob:' || window.location.protocol === 'file:') {
@@ -445,9 +505,12 @@
         document.getElementById('landing-page').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
         
+        // FIX: Initialize map immediately so 'markersLayer' exists for loadProviders
+        initMap();
+        
+        // Resize map after layout update to ensure tiles load correctly
         setTimeout(() => {
-            initMap();
-            map.invalidateSize();
+            if(map) map.invalidateSize();
         }, 100);
 
         if (service) {
@@ -462,6 +525,7 @@
         stopTracking();
         closeDetails();
         closeAuth();
+        document.getElementById('feedback-overlay').style.display = 'none';
         document.getElementById('call-overlay').style.display = 'none';
         document.getElementById('main-app').style.display = 'none';
         document.getElementById('landing-page').style.display = 'flex';
@@ -553,8 +617,7 @@
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) {
             closeDetails();
-            alert('Please login to book a service.');
-            openAuth('login');
+            showCustomAlert('Please login to book a service.', 'Login Required', '🔒', () => openAuth('login'));
             return;
         }
         
@@ -569,7 +632,7 @@
         
         document.getElementById('track-name').textContent = provider.name;
         document.getElementById('track-service').textContent = provider.service;
-        document.getElementById('track-time').textContent = "1 min"; 
+        document.getElementById('track-time').textContent = `${provider.etaMinutes} mins`; 
         
         currentProviderPhone = "+91 " + Math.floor(9000000000 + Math.random() * 900000000);
         document.getElementById('track-phone').textContent = `📞 ${currentProviderPhone}`;
@@ -612,9 +675,46 @@
         }, 1000);
     }
 
-    function declineCall() {
+    // --- FEEDBACK LOGIC ---
+    function showFeedback(providerName) {
         document.getElementById('call-overlay').style.display = 'none';
-        alert('Service has started! The provider is at your location.');
+        document.getElementById('tracking-overlay').style.display = 'none';
+        
+        const overlay = document.getElementById('feedback-overlay');
+        document.getElementById('feedback-provider-name').textContent = providerName || "the Provider";
+        
+        currentRating = 0;
+        document.getElementById('feedback-text').value = '';
+        updateStars();
+        
+        overlay.style.display = 'flex';
+    }
+
+    function rate(n) {
+        currentRating = n;
+        updateStars();
+    }
+
+    function updateStars() {
+        const stars = document.querySelectorAll('#star-container span');
+        stars.forEach((s, idx) => {
+            if (idx < currentRating) s.classList.add('gold');
+            else s.classList.remove('gold');
+        });
+    }
+
+    function submitFeedback() {
+        if (currentRating === 0) {
+            showCustomAlert("Please select a star rating.", "Rating Missing", "⭐");
+            return;
+        }
+        showCustomAlert(`Thank you! Your review has been submitted.`, "Success", "🎉", () => goHome());
+    }
+
+    function declineCall() {
+        const providerName = document.getElementById('call-name').textContent;
+        document.getElementById('call-overlay').style.display = 'none';
+        showCustomAlert('Service has started! The provider is at your location.', 'Service Started', '✅', () => showFeedback(providerName));
     }
 
     function getMockRoute(start, end) {
@@ -687,17 +787,8 @@
                 segmentIndex++;
             }
             
-            const remainingRatio = 1 - totalProgress;
-            const currentSimulatedMins = Math.ceil(startEtaMins * remainingRatio);
+            // Removed countdown logic. Time remains static until arrival.
             
-            if (currentSimulatedMins > 1) {
-                 document.getElementById('track-time').textContent = `${currentSimulatedMins} mins`;
-            } else if (currentSimulatedMins === 1) {
-                 document.getElementById('track-time').textContent = `1 min`;
-            } else {
-                 document.getElementById('track-time').textContent = "Arriving now...";
-            }
-
             if (segmentIndex >= totalSegments || currentFrame >= totalFrames) {
                 clearInterval(trackInterval);
                 document.getElementById('track-time').textContent = "Arrived!";
@@ -730,12 +821,13 @@
                 closeAuth();
                 updateNav();
                 updateLandingNav();
+                showCustomAlert("Welcome back, " + data.user.name + "!", "Login Successful", "👋");
             } else {
-                alert("Login Failed: " + data.error);
+                showCustomAlert(data.error, "Login Failed", "❌");
             }
         } catch(err) { 
             console.error(err);
-            alert("Connection Failed. Ensure server is running. Error: " + err.message);
+            showCustomAlert("Connection Failed. Ensure server is running.", "Network Error", "🌐");
         }
     });
 
@@ -761,14 +853,13 @@
             });
             const data = await res.json();
             if(data.success) { 
-                alert('Signup successful! Please login.'); 
-                switchTab('login'); 
+                showCustomAlert('Account created successfully! Please login.', 'Signup Successful', '✅', () => switchTab('login')); 
             } else { 
-                alert("Signup Failed: " + data.error); 
+                showCustomAlert(data.error, "Signup Failed", "❌"); 
             }
         } catch(err) { 
             console.error(err);
-            alert("Connection Failed. Ensure server is running. Error: " + err.message);
+            showCustomAlert("Connection Failed. Ensure server is running.", "Network Error", "🌐");
         }
     });
 
@@ -797,7 +888,10 @@
             
             const list = document.getElementById('providersList');
             list.innerHTML = '';
-            markersLayer.clearLayers();
+            
+            // FIX: Ensure layer exists before clearing (Safety check)
+            if (!markersLayer) initMap();
+            if (markersLayer) markersLayer.clearLayers();
 
             if(allProviders.length === 0) list.innerHTML = '<p style="text-align:center;color:#777;">No providers found.</p>';
 
@@ -818,13 +912,16 @@
                 });
                 list.appendChild(card);
 
-                L.marker([p.lat, p.lng]).addTo(markersLayer)
-                 .bindPopup(`<b>${p.name}</b><br>${p.service}<br>₹${p.priceFrom}`)
-                 .on('click', () => showDetails(p._id));
+                // FIX: Safety check for adding layer
+                if (markersLayer) {
+                    L.marker([p.lat, p.lng]).addTo(markersLayer)
+                     .bindPopup(`<b>${p.name}</b><br>${p.service}<br>₹${p.priceFrom}`)
+                     .on('click', () => showDetails(p._id));
+                }
             });
         } catch(err) { 
             console.error(err);
-            alert("Failed to load providers. Ensure server is running. Error: " + err.message);
+            showCustomAlert("Failed to load providers. Ensure server is running.", "Data Error", "📡");
         }
     }
 
@@ -837,7 +934,7 @@
             if(user) {
                 loadProviders();
             } else {
-                openAuth('login');
+                showCustomAlert('Please login to search for providers.', 'Login Required', '🔒', () => openAuth('login'));
             }
         });
     });
