@@ -6,52 +6,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <style>
-    :root { --primary: #0066cc; --bg: #f4f7f6; --white: #fff; --accent: #ff9900; }
+    :root { --primary: #0066cc; --bg: #f4f7f6; --white: #fff; --accent: #ff9900; --success: #28a745; }
     body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); height: 100vh; display: flex; flex-direction: column; }
     
-    /* --- AUTH STYLES --- */
-    #auth-overlay {
+    /* --- MODAL STYLES --- */
+    .modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
-        display: none; /* Hidden by default */
-        justify-content: center; align-items: center;
-        z-index: 1000;
+        display: none; justify-content: center; align-items: center;
+        z-index: 2000;
     }
-    .auth-box {
+    .modal-box {
         background: white; padding: 2rem; border-radius: 12px;
         width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         position: relative;
     }
     .close-modal {
         position: absolute; top: 10px; right: 15px;
-        font-size: 24px; font-weight: bold; color: #888;
-        cursor: pointer;
+        font-size: 24px; font-weight: bold; color: #888; cursor: pointer;
     }
     .close-modal:hover { color: #333; }
 
+    /* --- FORM & TABS --- */
     .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
     .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; color: #777; font-weight: bold; }
     .tab.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
     .input-group { margin-bottom: 15px; }
     input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-    .btn-auth { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; }
+    .btn-primary { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; }
+    .btn-primary:hover { background: #0052a3; }
     .hidden { display: none; }
     .error-msg { color: red; font-size: 0.9rem; margin-bottom: 10px; text-align: center; }
 
-    /* --- APP STYLES --- */
-    #main-app { display: flex; height: 100%; flex-direction: column; }
+    /* --- TRACKING OVERLAY STYLES --- */
+    #tracking-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: white;
+        z-index: 3000;
+        display: none;
+        flex-direction: column;
+    }
+    .tracking-header {
+        padding: 20px;
+        background: var(--success);
+        color: white;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .tracking-header h2 { margin: 0; font-size: 1.5rem; }
+    .tracking-header p { margin: 5px 0 0; opacity: 0.9; }
     
+    .tracking-info {
+        padding: 15px;
+        background: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+    }
+    .driver-profile { display: flex; align-items: center; gap: 10px; }
+    .driver-avatar {
+        width: 50px; height: 50px; background: #eee; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; font-size: 24px;
+    }
+    
+    #tracking-map { flex: 1; width: 100%; }
+    
+    .tracking-footer {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #eee;
+        text-align: center;
+    }
+    .btn-cancel { background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-size: 1rem; }
+
+    /* --- APP LAYOUT --- */
+    #main-app { display: flex; height: 100%; flex-direction: column; }
     header { background: var(--white); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     header h3 { margin: 0; color: var(--primary); }
     
-    .nav-btn {
-        padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: 0.2s;
-    }
+    .nav-btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: 0.2s; }
     .btn-login { border: 1px solid var(--primary); color: var(--primary); background: transparent; margin-right: 10px; }
     .btn-signup { border: none; background: var(--primary); color: white; }
     .btn-logout { border: 1px solid #ccc; background: #eee; color: #333; }
-    .btn-login:hover { background: #e6f0ff; }
-    .btn-signup:hover { background: #0052a3; }
+    .btn-home { border: none; background: transparent; color: #333; margin-right: 15px; }
+    .btn-home:hover { color: var(--primary); background: #f0f0f0; }
 
     .hero { background: var(--primary); color: white; padding: 2rem; text-align: center; }
     .search-box { background: white; padding: 10px; border-radius: 50px; display: inline-flex; gap: 10px; margin-top: 15px; }
@@ -62,17 +101,33 @@
     .list-view { width: 35%; padding: 20px; overflow-y: auto; background: white; }
     .map-view { flex: 1; }
     #map { height: 100%; width: 100%; }
-    .card { padding: 15px; border: 1px solid #eee; margin-bottom: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+
+    /* --- CARD & BUTTON STYLES --- */
+    .card { padding: 15px; border: 1px solid #eee; margin-bottom: 15px; border-radius: 8px; transition: 0.2s; background: white; }
     .card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    .card h4 { margin: 0 0 5px 0; color: #333; }
+    .card p { margin: 5px 0; color: #666; font-size: 0.9rem; }
+    
+    .card-actions { display: flex; gap: 10px; margin-top: 10px; }
+    .card-btn { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+    .btn-details { background: #eef2f6; color: #333; }
+    .btn-book { background: var(--primary); color: white; }
+    .btn-details:hover { background: #e0e0e0; }
+    .btn-book:hover { background: #004494; }
+
+    /* Detail Modal Specifics */
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+    .detail-label { color: #666; font-weight: 500; }
+    .detail-val { font-weight: bold; color: #333; }
     </style>
 </head>
 <body>
 
-<!-- AUTH OVERLAY (Hidden by default) -->
-<div id="auth-overlay">
-    <div class="auth-box">
+<!-- AUTH MODAL -->
+<div id="auth-overlay" class="modal-overlay">
+    <div class="modal-box">
         <span class="close-modal" onclick="closeAuth()">&times;</span>
-        <h2 style="text-align:center; color: var(--primary); margin-top:0;">Local Services</h2>
+        <h2 style="text-align:center; color: var(--primary); margin-top:0;">Welcome</h2>
         <div class="auth-tabs">
             <div class="tab active" onclick="switchTab('login')">Login</div>
             <div class="tab" onclick="switchTab('signup')">Sign Up</div>
@@ -81,15 +136,9 @@
 
         <!-- LOGIN FORM -->
         <form id="login-form">
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="login-email" required>
-            </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="login-password" required>
-            </div>
-            <button type="submit" class="btn-auth">Login</button>
+            <div class="input-group"><label>Email</label><input type="email" id="login-email" required></div>
+            <div class="input-group"><label>Password</label><input type="password" id="login-password" required></div>
+            <button type="submit" class="btn-primary">Login</button>
         </form>
 
         <!-- SIGNUP FORM -->
@@ -101,20 +150,10 @@
                     <option value="provider">Service Provider</option>
                 </select>
             </div>
-            <div class="input-group">
-                <label>Full Name</label>
-                <input type="text" id="signup-name" required>
-            </div>
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="signup-email" required>
-            </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="signup-password" required>
-            </div>
+            <div class="input-group"><label>Full Name</label><input type="text" id="signup-name" required></div>
+            <div class="input-group"><label>Email</label><input type="email" id="signup-email" required></div>
+            <div class="input-group"><label>Password</label><input type="password" id="signup-password" required></div>
 
-            <!-- Provider Only Fields -->
             <div id="provider-fields" class="hidden">
                 <div class="input-group">
                     <label>Service Type</label>
@@ -123,25 +162,71 @@
                         <option value="Plumber">Plumber</option>
                         <option value="Driver">Driver</option>
                         <option value="Carpenter">Carpenter</option>
+                        <option value="Painter">Painter</option>
+                        <option value="Cleaner">Cleaner</option>
                     </select>
                 </div>
-                <div class="input-group">
-                    <label>Starting Price (₹)</label>
-                    <input type="number" id="signup-price" placeholder="e.g. 300">
-                </div>
+                <div class="input-group"><label>Starting Price (₹)</label><input type="number" id="signup-price" placeholder="300"></div>
             </div>
-
-            <button type="submit" class="btn-auth">Create Account</button>
+            <button type="submit" class="btn-primary">Create Account</button>
         </form>
     </div>
 </div>
 
-<!-- MAIN APP UI (Visible by default) -->
+<!-- DETAILS MODAL -->
+<div id="details-modal" class="modal-overlay">
+    <div class="modal-box">
+        <span class="close-modal" onclick="closeDetails()">&times;</span>
+        <h2 id="d-name" style="color: var(--primary); margin-top:0;">Provider Name</h2>
+        <p id="d-service" style="color: #666; margin-bottom: 20px;">Service Type</p>
+        
+        <div class="detail-row"><span class="detail-label">Rating</span><span class="detail-val" id="d-rating">4.5 ★</span></div>
+        <div class="detail-row"><span class="detail-label">Reviews</span><span class="detail-val" id="d-reviews">120</span></div>
+        <div class="detail-row"><span class="detail-label">Distance</span><span class="detail-val" id="d-dist">2.5 km</span></div>
+        <div class="detail-row"><span class="detail-label">Est. Arrival</span><span class="detail-val" id="d-eta">20 mins</span></div>
+        <div class="detail-row"><span class="detail-label">Price Starts</span><span class="detail-val" id="d-price">₹350</span></div>
+        
+        <div style="margin-top: 20px;">
+            <button id="d-book-btn" class="btn-primary">Confirm Booking</button>
+        </div>
+    </div>
+</div>
+
+<!-- LIVE TRACKING OVERLAY -->
+<div id="tracking-overlay">
+    <div class="tracking-header">
+        <h2>Booking Confirmed!</h2>
+        <p>Your professional is on the way</p>
+    </div>
+    <div class="tracking-info">
+        <div class="driver-profile">
+            <div class="driver-avatar">👤</div>
+            <div>
+                <strong id="track-name">Provider Name</strong><br>
+                <small id="track-service">Electrician</small><br>
+                <small id="track-phone" style="color:var(--primary); font-weight:bold; margin-top:4px; display:inline-block;">📞 ...</small>
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:1.2rem; font-weight:bold; color:var(--primary);" id="track-time">1 min</div>
+            <small>Estimated Arrival</small>
+        </div>
+    </div>
+    
+    <div id="tracking-map"></div>
+    
+    <div class="tracking-footer">
+        <button class="btn-cancel" onclick="stopTracking()">Cancel / Close Tracking</button>
+    </div>
+</div>
+
+<!-- MAIN APP -->
 <div id="main-app">
     <header>
-        <h3>Local Services Finder</h3>
-        <div id="nav-container" style="display:flex; align-items:center;">
-            <!-- Buttons injected by JS based on login state -->
+        <h3 onclick="goHome()" style="cursor:pointer">Local Services Finder</h3>
+        <div style="display:flex; align-items:center;">
+            <button onclick="goHome()" class="nav-btn btn-home">Home</button>
+            <div id="nav-container" style="display:flex; align-items:center;"></div>
         </div>
     </header>
 
@@ -154,6 +239,8 @@
                 <option value="Plumber">Plumber</option>
                 <option value="Driver">Driver</option>
                 <option value="Carpenter">Carpenter</option>
+                <option value="Painter">Painter</option>
+                <option value="Cleaner">Cleaner</option>
             </select>
             <select id="distanceSelect">
                 <option value="">Any Distance</option>
@@ -172,93 +259,233 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-    // --- UI HELPERS ---
+    let allProviders = []; 
+    let map, markersLayer;
+    
+    // Tracking Global Vars
+    let trackingMap, trackUserMarker, trackProviderMarker, trackPolyline, trackInterval;
+
+    // --- API HELPER ---
+    function getApiBaseUrl() {
+        if (window.location.protocol === 'blob:' || window.location.protocol === 'file:') {
+            return 'http://localhost:3000';
+        }
+        return '';
+    }
+
+    // --- UI FUNCTIONS ---
+    function goHome() {
+        stopTracking();
+        closeDetails();
+        closeAuth();
+        document.getElementById('serviceSelect').value = "";
+        document.getElementById('distanceSelect').value = "";
+        loadProviders();
+    }
+
     function openAuth(mode) {
         document.getElementById('auth-overlay').style.display = 'flex';
         switchTab(mode);
     }
-
     function closeAuth() {
         document.getElementById('auth-overlay').style.display = 'none';
-        document.getElementById('auth-error').textContent = '';
     }
-
+    function closeDetails() {
+        document.getElementById('details-modal').style.display = 'none';
+    }
     function switchTab(tab) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        event.target ? event.target.classList.add('active') : document.querySelectorAll('.tab')[tab === 'login' ? 0 : 1].classList.add('active');
+        const idx = tab === 'login' ? 0 : 1;
+        document.querySelectorAll('.tab')[idx].classList.add('active');
+        document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+        document.getElementById('signup-form').classList.toggle('hidden', tab === 'login');
+    }
+    function toggleProviderFields() {
+        const role = document.getElementById('signup-role').value;
+        document.getElementById('provider-fields').classList.toggle('hidden', role !== 'provider');
+    }
+
+    // --- DETAILS & BOOKING ---
+    function showDetails(id) {
+        const p = allProviders.find(prov => prov._id === id);
+        if (!p) return;
+
+        document.getElementById('d-name').textContent = p.name;
+        document.getElementById('d-service').textContent = p.service;
+        document.getElementById('d-rating').textContent = `${p.rating} ★`;
+        document.getElementById('d-reviews').textContent = p.reviews;
+        document.getElementById('d-dist').textContent = `${p.distanceKm} km`;
+        document.getElementById('d-eta').textContent = `${p.etaMinutes} mins`;
+        document.getElementById('d-price').textContent = `₹${p.priceFrom}`;
         
-        document.getElementById('auth-error').textContent = '';
+        const btn = document.getElementById('d-book-btn');
+        btn.onclick = () => bookProvider(id);
         
-        if(tab === 'login') {
-            document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('signup-form').classList.add('hidden');
+        document.getElementById('details-modal').style.display = 'flex';
+    }
+
+    function bookProvider(id) {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            closeDetails();
+            alert('Please login to book a service.');
+            openAuth('login');
+            return;
+        }
+        
+        // Start Live Tracking Flow
+        closeDetails();
+        const p = allProviders.find(prov => prov._id === id);
+        startLiveTracking(p);
+    }
+
+    // --- LIVE TRACKING LOGIC ---
+    function startLiveTracking(provider) {
+        const overlay = document.getElementById('tracking-overlay');
+        overlay.style.display = 'flex';
+        
+        // Update Info
+        document.getElementById('track-name').textContent = provider.name;
+        document.getElementById('track-service').textContent = provider.service;
+        document.getElementById('track-time').textContent = "1 min"; // Initial display
+        
+        // Mock phone number
+        const randomPhone = "+91 " + Math.floor(9000000000 + Math.random() * 900000000);
+        document.getElementById('track-phone').textContent = `📞 ${randomPhone}`;
+
+        // Determine User Location (Browser Geolocation or Default)
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => initTrackingMap(pos.coords.latitude, pos.coords.longitude, provider),
+                () => initTrackingMap(12.9716, 77.5946, provider) // Fallback: Bangalore Center
+            );
         } else {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('signup-form').classList.remove('hidden');
+            initTrackingMap(12.9716, 77.5946, provider);
         }
     }
 
-    function toggleProviderFields() {
-        const role = document.getElementById('signup-role').value;
-        const fields = document.getElementById('provider-fields');
-        if(role === 'provider') fields.classList.remove('hidden');
-        else fields.classList.add('hidden');
+    // Generate a "city-block" style path for realism
+    function getMockRoute(start, end) {
+        const latDiff = end[0] - start[0];
+        const lngDiff = end[1] - start[1];
+        
+        return [
+            start,
+            [start[0] + latDiff * 0.2, start[1]],                  // Move North/South 20%
+            [start[0] + latDiff * 0.2, start[1] + lngDiff * 0.5], // Turn & move East/West 50%
+            [start[0] + latDiff * 0.8, start[1] + lngDiff * 0.5], // Turn & move North/South to 80%
+            [start[0] + latDiff * 0.8, end[1]],                   // Turn & move East/West to 100%
+            end                                                   // Final straight
+        ];
     }
 
+    function initTrackingMap(userLat, userLng, provider) {
+        // Initialize Map if not exists
+        if (!trackingMap) {
+            trackingMap = L.map('tracking-map');
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(trackingMap);
+        }
+        
+        setTimeout(() => trackingMap.invalidateSize(), 100);
+
+        // Icons
+        const userIcon = L.divIcon({ html: '🏠', className: 'dummy', iconSize: [24, 24], iconAnchor: [12, 12] });
+        const providerIcon = L.divIcon({ html: '🚗', className: 'dummy', iconSize: [24, 24], iconAnchor: [12, 12] });
+
+        // Reset Layers
+        if (trackUserMarker) trackingMap.removeLayer(trackUserMarker);
+        if (trackProviderMarker) trackingMap.removeLayer(trackProviderMarker);
+        if (trackPolyline) trackingMap.removeLayer(trackPolyline);
+
+        const startPoint = [provider.lat, provider.lng];
+        const endPoint = [userLat, userLng];
+
+        // 1. Setup User and Provider Markers
+        trackUserMarker = L.marker(endPoint, {icon: userIcon}).addTo(trackingMap).bindPopup("You");
+        trackProviderMarker = L.marker(startPoint, {icon: providerIcon}).addTo(trackingMap).bindPopup(provider.name);
+
+        // 2. Generate Realistic Path
+        const routePoints = getMockRoute(startPoint, endPoint);
+        trackPolyline = L.polyline(routePoints, {color: '#0066cc', weight: 4, dashArray: '10, 10', opacity: 0.7}).addTo(trackingMap);
+        
+        // Fit Bounds
+        const bounds = L.latLngBounds(routePoints);
+        trackingMap.fitBounds(bounds, {padding: [50, 50]});
+
+        // --- ANIMATION CONFIGURATION ---
+        const duration = 60000; // 60 Seconds (1 Minute)
+        const frameRate = 30; // 30ms per frame
+        const totalFrames = duration / frameRate;
+        const totalSegments = routePoints.length - 1;
+        const framesPerSegment = totalFrames / totalSegments;
+
+        let currentFrame = 0;
+        let segmentIndex = 0;
+
+        if (trackInterval) clearInterval(trackInterval);
+
+        trackInterval = setInterval(() => {
+            currentFrame++;
+
+            // Calculate progress (0.0 to 1.0) for current segment
+            const progress = (currentFrame % framesPerSegment) / framesPerSegment;
+            
+            // Determine current start and end points for the active segment
+            const segStart = routePoints[segmentIndex];
+            const segEnd = routePoints[segmentIndex + 1];
+
+            // Linear Interpolation
+            const lat = segStart[0] + (segEnd[0] - segStart[0]) * progress;
+            const lng = segStart[1] + (segEnd[1] - segStart[1]) * progress;
+
+            trackProviderMarker.setLatLng([lat, lng]);
+
+            // Move to next segment if current one finishes
+            if (currentFrame % Math.floor(framesPerSegment) === 0) {
+                segmentIndex++;
+            }
+
+            // Update Time Display
+            const remainingSecs = Math.ceil((totalFrames - currentFrame) * frameRate / 1000);
+            if(remainingSecs > 0) {
+                 document.getElementById('track-time').textContent = remainingSecs > 59 ? "1 min" : `${remainingSecs} sec`;
+            } else {
+                 document.getElementById('track-time').textContent = "Arrived!";
+            }
+
+            // End Animation
+            if (segmentIndex >= totalSegments) {
+                clearInterval(trackInterval);
+                document.getElementById('track-time').textContent = "Arrived!";
+                alert(`${provider.name} has arrived at your location!`);
+            }
+        }, frameRate);
+    }
+
+    function stopTracking() {
+        document.getElementById('tracking-overlay').style.display = 'none';
+        if (trackInterval) clearInterval(trackInterval);
+    }
+
+    // --- AUTH LOGIC ---
     function updateNav() {
         const user = JSON.parse(localStorage.getItem('user'));
         const nav = document.getElementById('nav-container');
-        
         if (user) {
-            nav.innerHTML = `
-                <span style="margin-right:15px; font-weight:bold;">Hi, ${user.name}</span>
-                <button onclick="logout()" class="nav-btn btn-logout">Logout</button>
-            `;
+            nav.innerHTML = `<span style="margin-right:15px; font-weight:bold;">Hi, ${user.name}</span>
+                             <button onclick="logout()" class="nav-btn btn-logout">Logout</button>`;
         } else {
-            nav.innerHTML = `
-                <button onclick="openAuth('login')" class="nav-btn btn-login">Login</button>
-                <button onclick="openAuth('signup')" class="nav-btn btn-signup">Sign Up</button>
-            `;
+            nav.innerHTML = `<button onclick="openAuth('login')" class="nav-btn btn-login">Login</button>
+                             <button onclick="openAuth('signup')" class="nav-btn btn-signup">Sign Up</button>`;
         }
     }
-
-    // --- AUTH API ---
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const role = document.getElementById('signup-role').value;
-        const payload = {
-            name: document.getElementById('signup-name').value,
-            email: document.getElementById('signup-email').value,
-            password: document.getElementById('signup-password').value,
-            role: role
-        };
-
-        if(role === 'provider') {
-            payload.service = document.getElementById('signup-service').value;
-            payload.priceFrom = document.getElementById('signup-price').value;
-        }
-
-        try {
-            const res = await fetch('/api/signup', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            
-            if(data.success) {
-                alert('Account created! Please login.');
-                switchTab('login');
-            } else {
-                document.getElementById('auth-error').textContent = data.error || 'Signup failed';
-            }
-        } catch(err) { console.error(err); }
-    });
+    function logout() { localStorage.removeItem('user'); updateNav(); window.location.reload(); }
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch('/api/login', {
+            const apiBase = getApiBaseUrl();
+            const res = await fetch(`${apiBase}/api/login`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -267,29 +494,46 @@
                 })
             });
             const data = await res.json();
-
             if(data.success) {
                 localStorage.setItem('user', JSON.stringify(data.user));
                 closeAuth();
                 updateNav();
             } else {
-                document.getElementById('auth-error').textContent = data.error || 'Login failed';
+                alert(data.error);
             }
         } catch(err) { console.error(err); }
     });
 
-    function logout() {
-        localStorage.removeItem('user');
-        updateNav();
-        window.location.reload();
-    }
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const role = document.getElementById('signup-role').value;
+        const payload = {
+            name: document.getElementById('signup-name').value,
+            email: document.getElementById('signup-email').value,
+            password: document.getElementById('signup-password').value,
+            role
+        };
+        if(role === 'provider') {
+            payload.service = document.getElementById('signup-service').value;
+            payload.priceFrom = document.getElementById('signup-price').value;
+        }
+        try {
+            const apiBase = getApiBaseUrl();
+            const res = await fetch(`${apiBase}/api/signup`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if(data.success) { alert('Signup successful! Please login.'); switchTab('login'); }
+            else { alert(data.error); }
+        } catch(err) { console.error(err); }
+    });
 
-    // --- MAP & DATA LOGIC ---
-    let map, markersLayer;
-
+    // --- DATA LOADING ---
     function initMap() {
         if(map) return;
-        map = L.map('map').setView([12.9716, 77.5946], 13);
+        map = L.map('map').setView([12.9716, 77.5946], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         markersLayer = L.layerGroup().addTo(map);
     }
@@ -298,50 +542,61 @@
         const svc = document.getElementById('serviceSelect').value;
         const dist = document.getElementById('distanceSelect').value;
         
-        let url = '/api/providers?';
-        if(svc) url += `service=${svc}&`;
-        if(dist) url += `maxDistanceKm=${dist}`;
+        // FIX: Use URLSearchParams for clean URL construction
+        const params = new URLSearchParams();
+        if (svc) params.append('service', svc);
+        if (dist) params.append('maxDistanceKm', dist);
+
+        const queryString = params.toString();
+        
+        // FIX: Detect environment to prevent "Failed to parse URL" in blobs
+        const apiBase = getApiBaseUrl();
+        const url = queryString ? `${apiBase}/api/providers?${queryString}` : `${apiBase}/api/providers`;
 
         try {
             const res = await fetch(url);
-            const providers = await res.json();
+            allProviders = await res.json();
             
             const list = document.getElementById('providersList');
             list.innerHTML = '';
             markersLayer.clearLayers();
 
-            if(providers.length === 0) {
-                list.innerHTML = '<p style="text-align:center; color:#666;">No providers found.</p>';
-            }
+            if(allProviders.length === 0) list.innerHTML = '<p style="text-align:center;color:#777;">No providers found.</p>';
 
-            providers.forEach(p => {
+            allProviders.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<h4>${p.name}</h4><p>${p.service} • ₹${p.priceFrom}</p><p>${p.distanceKm} km away</p>`;
-                card.onclick = () => { map.setView([p.lat, p.lng], 15); };
+                card.innerHTML = `
+                    <h4>${p.name}</h4>
+                    <p><strong>${p.service}</strong> • ₹${p.priceFrom}</p>
+                    <p>📍 ${p.distanceKm} km away • ⏱️ ${p.etaMinutes} mins</p>
+                    <div class="card-actions">
+                        <button class="card-btn btn-details" onclick="showDetails('${p._id}')">Details</button>
+                        <button class="card-btn btn-book" onclick="bookProvider('${p._id}')">Book Now</button>
+                    </div>
+                `;
+                card.addEventListener('click', (e) => {
+                    if(e.target.tagName !== 'BUTTON') map.setView([p.lat, p.lng], 15);
+                });
                 list.appendChild(card);
 
                 L.marker([p.lat, p.lng]).addTo(markersLayer)
-                 .bindPopup(`<b>${p.name}</b><br>${p.service}<br>₹${p.priceFrom}`);
+                 .bindPopup(`<b>${p.name}</b><br>${p.service}<br>₹${p.priceFrom}`)
+                 .on('click', () => showDetails(p._id));
             });
         } catch(err) { console.error(err); }
     }
 
-    // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', () => {
         updateNav();
         initMap();
-        loadProviders(); // Initial load allows viewing default providers
+        loadProviders();
 
-        // UPDATED: Check login status before searching
         document.getElementById('searchBtn').addEventListener('click', () => {
             const user = JSON.parse(localStorage.getItem('user'));
-            
-            if (user) {
-                // If logged in, proceed with search
+            if(user) {
                 loadProviders();
             } else {
-                // If not logged in, open the login modal
                 openAuth('login');
             }
         });
